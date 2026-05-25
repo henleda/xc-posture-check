@@ -1,3 +1,11 @@
 # ruflo runtime state
 .claude-flow/
 .vercel
+
+# env files (keep .env.example tracked)
+.env
+.env.*
+!.env.example
+
+# macOS
+.DS_Store
