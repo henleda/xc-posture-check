@@ -70,7 +70,8 @@ Task three. Phase 2 — Drizzle schema + initial migration for the ten tables de
 ## Known issues and tech debt
 
 - Commit `f360df2` author is `Daniel Henley <danielhenley@mac.lan>` (pre-git-config-set). Left as-is by decision.
-- The Neon `DATABASE_URL` was shared in chat plaintext before Phase 0 landed. Lives only in `.env.local`. If Dan wants belt-and-suspenders, rotate from the Neon console before launch.
+- Service credentials (Neon, Upstash, Sentry, PostHog) were shared in chat plaintext. Live only in `.env.local` and Vercel preview env (encrypted). If Dan wants belt-and-suspenders, rotate each from its respective console before launch.
+- **Neon branch split before production**: Vercel preview currently points at the same Neon branch as local dev. Before any production data exists, create a dedicated Neon branch for one side (prod or preview) so PR previews never write into production. See `vercel env rm NEON_DATABASE_URL preview && vercel env add NEON_DATABASE_URL preview` to swap.
 
 ## Open questions for Dan
 
@@ -120,3 +121,8 @@ Day one (2026-05-25).
 Day two (2026-05-26).
 - Dan provided Upstash Redis REST credentials. Stored locally in `.env.local`; mirrored to Vercel preview env via `vercel env add ... preview`.
 - Aligned Upstash env var names to the Upstash SDK convention (`UPSTASH_REDIS_REST_URL`, `UPSTASH_REDIS_REST_TOKEN`) so `Redis.fromEnv()` works without glue. Updated `.env.example` and `CLAUDE.md` to match.
+- Mirrored `NEON_DATABASE_URL` to Vercel preview env (currently the same Neon branch as local; will split into a preview-specific branch before production data exists — see Known issues).
+- Provisioned Sentry. `SENTRY_DSN` stored locally and mirrored to Vercel preview.
+- Provisioned PostHog (Cloud US). Aligned to `NEXT_PUBLIC_POSTHOG_KEY` and `NEXT_PUBLIC_POSTHOG_HOST` so the SDK can autocapture client-side. Updated `.env.example` and `CLAUDE.md` to match. Values mirrored to Vercel preview.
+- All Phase 1 hard and soft dependencies are now satisfied. Ready to scaffold.
+- **Ruflo auto-install incident.** Around 11:26 local, the ruflo MCP server autonomously ran `npm install @sentry/node --save` from the project root (verified via `~/.npm/_logs/`), creating `package.json`, `package-lock.json`, and `node_modules/`. Triggered by mentions of Sentry in `.env.local`. Wrong package for our stack (`@sentry/nextjs` is correct for Next.js App Router) and unauthorized. Deleted all three artifacts. Added `node_modules/` to `.gitignore` as a defensive guard. Decision deferred on whether to disable ruflo's PostToolUse hooks and `claudeFlow` auto-flags — Dan opted to leave settings.json untouched for now and re-evaluate if another silent mutation occurs.
