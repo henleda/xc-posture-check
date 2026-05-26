@@ -2,7 +2,7 @@
 
 Running state of the XC Posture Check build. Read at the start of every Claude Code session, update at the end.
 
-Last updated: 2026-05-25
+Last updated: 2026-05-26
 Current week: Week 0
 Current phase: Phase 0 complete; Phase 1 (scaffold) up next
 
@@ -116,3 +116,7 @@ Day one (2026-05-25).
 - Confirmed Vercel setup: domain attached, DNS at Squarespace (apex A + www CNAME), production branch `main`. Recorded as ADR-007.
 - Dan signed off on the engineering plan.
 - Executed Phase 0 housekeeping: renamed spec to `/docs/spec.md`, created `DECISIONS.md` (ADR-001..008), `.env.example`, `.nvmrc`, `README.md`. Updated PROGRESS.md.
+
+Day two (2026-05-26).
+- Dan provided Upstash Redis REST credentials. Stored locally in `.env.local`; mirrored to Vercel preview env via `vercel env add ... preview`.
+- Aligned Upstash env var names to the Upstash SDK convention (`UPSTASH_REDIS_REST_URL`, `UPSTASH_REDIS_REST_TOKEN`) so `Redis.fromEnv()` works without glue. Updated `.env.example` and `CLAUDE.md` to match.
