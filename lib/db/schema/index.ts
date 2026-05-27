@@ -1,6 +1,17 @@
-// Drizzle schema entry point.
+// Drizzle schema entry point. Re-exports every table and enum.
 //
-// Tables land here in Phase 2 (one file per table under ./tables/, re-exported here).
-// Empty for now so drizzle-kit can introspect a valid schema during Phase 1.
+// New tables land under ./tables/<name>.ts and are added here as a barrel
+// re-export. drizzle.config.ts points at this file as the schema source.
 
-export {};
+export * from "./enums";
+
+export * from "./tables/users";
+export * from "./tables/share-links";
+export * from "./tables/assessments";
+export * from "./tables/assets";
+export * from "./tables/asset-findings";
+export * from "./tables/inventory-findings";
+export * from "./tables/events";
+export * from "./tables/domain-exclusions";
+export * from "./tables/asn-to-provider-map";
+export * from "./tables/xc-reference-data";
