@@ -6,6 +6,9 @@
 export * from "./enums";
 
 export * from "./tables/users";
+export * from "./tables/accounts";
+export * from "./tables/sessions";
+export * from "./tables/verification-tokens";
 export * from "./tables/share-links";
 export * from "./tables/assessments";
 export * from "./tables/assets";

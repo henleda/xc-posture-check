@@ -12,6 +12,13 @@ export const users = pgTable(
     name: text("name"),
     title: text("title"),
     avatarUrl: text("avatar_url"),
+    // image and emailVerified are required by Auth.js Drizzle adapter.
+    // image overlaps with avatar_url; we keep both for now (image is the
+    // adapter-managed value from OAuth providers we might add later, avatar_url
+    // is seller-configurable). Phase 3 just reads image when present, else falls
+    // back to avatar_url.
+    image: text("image"),
+    emailVerified: timestamp("email_verified", { withTimezone: true, mode: "date" }),
     calendarUrl: text("calendar_url"),
     slackHandle: text("slack_handle"),
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
