@@ -42,7 +42,7 @@ Environment variables required for local dev are listed in `.env.example`. Real 
 
 ## Hosting
 
-Hosted on Vercel under the personal team `dan-henleys-projects/xc-posture-check`. Auto-deploys on push to `main` (production) and on every PR (preview). DNS is at Squarespace; both apex (`f5evolution.com`) and `www` are attached to the Vercel project, with `www` redirecting to apex. See `DECISIONS.md` ADR-007 for context.
+Hosted on Vercel under the personal team `dan-henleys-projects/xc-posture-check`. Auto-deploys on push to `main` (production) and on every PR (preview). DNS is at Squarespace; both apex (`f5evolution.com`) and `www` are attached to the Vercel project, with apex redirecting to `www` (canonical). See `DECISIONS.md` ADR-007 for context.
 
 ## Repository conventions
 
