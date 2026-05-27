@@ -92,7 +92,9 @@ Consequences.
 - Future subdomain work (e.g., `share.f5evolution.com` for short links if we ever shorten further) is a Squarespace edit plus a Vercel domain attach.
 - The decision is reversible: we can move NS to Vercel later with ~24h propagation if the two-pane setup becomes painful.
 
-Canonical hostname is the apex `https://f5evolution.com`; `www` redirects to apex via Vercel's domain settings. `NEXTAUTH_URL` and seller-share URLs use apex.
+Canonical hostname is `https://www.f5evolution.com`; apex redirects to `www` via Vercel's domain settings (`www` is set as the primary domain in the Vercel project). `NEXTAUTH_URL` and seller-share URLs use `www`.
+
+**Amendment (2026-05-27):** The original draft of this ADR stated the apex was canonical. The as-built Vercel configuration uses `www` as primary, with the apex 307-redirecting to it. Documenting the actual configuration rather than flipping the redirect — both directions are defensible, and the brand seller-share URLs already in flight haven't been printed anywhere yet, so there is no cost to keeping `www`. If brand later prefers apex, flipping primary in the Vercel dashboard is reversible in minutes.
 
 ---
 
