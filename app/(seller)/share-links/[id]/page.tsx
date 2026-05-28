@@ -2,18 +2,15 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import { eq } from "drizzle-orm";
 import { db } from "@/lib/db/client";
-import { auth } from "@/auth";
 import { shareLinks } from "@/lib/db/schema/tables/share-links";
 import { listAssessmentsForShareLink } from "@/lib/db/queries/assessments";
 import { listEventsForShareLink } from "@/lib/db/queries/events";
 
 export const dynamic = "force-dynamic";
 
-async function getShareLinkOwnedBy(id: string, userId: string) {
+async function getShareLink(id: string) {
   const [row] = await db.select().from(shareLinks).where(eq(shareLinks.id, id)).limit(1);
-  if (!row) return null;
-  if (row.userId !== userId) return null;
-  return row;
+  return row ?? null;
 }
 
 export default async function ShareLinkDetailPage({
@@ -21,11 +18,11 @@ export default async function ShareLinkDetailPage({
 }: {
   params: Promise<{ id: string }>;
 }) {
-  const session = await auth();
-  if (!session?.user?.id) return null;
   const { id } = await params;
 
-  const link = await getShareLinkOwnedBy(id, session.user.id);
+  // Admin gate is enforced by middleware on /share-links/*; no per-row owner
+  // check needed since the single admin sees every link.
+  const link = await getShareLink(id);
   if (!link) notFound();
 
   const [assessments, events] = await Promise.all([

@@ -2,8 +2,7 @@ import { eq } from "drizzle-orm";
 import { uuidv7 } from "uuidv7";
 import { db } from "../client";
 import { users, type User, type NewUser } from "../schema/tables/users";
-
-const F5_DOMAIN_RE = /^[^@]+@f5\.com$/i;
+import { isF5Email } from "@/lib/auth/allowed-email";
 
 export class UserDomainNotAllowedError extends Error {
   constructor(email: string) {
@@ -25,7 +24,7 @@ export async function getUserByEmail(email: string): Promise<User | null> {
  */
 export async function createUser(input: Omit<NewUser, "id">): Promise<User> {
   const normalizedEmail = input.email.toLowerCase();
-  if (!F5_DOMAIN_RE.test(normalizedEmail)) {
+  if (!isF5Email(normalizedEmail)) {
     throw new UserDomainNotAllowedError(normalizedEmail);
   }
   const [row] = await db
@@ -37,11 +36,19 @@ export async function createUser(input: Omit<NewUser, "id">): Promise<User> {
 }
 
 /**
- * Upsert convenience: get-or-create. NextAuth's email magic-link flow lands
- * here on every successful sign-in.
+ * Upsert convenience: get-or-create by email.
  */
 export async function ensureUser(input: Omit<NewUser, "id">): Promise<User> {
   const existing = await getUserByEmail(input.email);
   if (existing) return existing;
   return createUser(input);
+}
+
+/**
+ * List seller profiles for the admin dashboard's share-link creation form.
+ * Sellers are users the admin creates for co-branding; they do not log in
+ * (auth is the single admin gate — see ADR-009). Ordered by name.
+ */
+export async function listSellers(): Promise<User[]> {
+  return db.select().from(users).orderBy(users.name);
 }

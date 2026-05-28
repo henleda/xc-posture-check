@@ -2,6 +2,7 @@ import { and, desc, eq, gt, isNull, or, sql } from "drizzle-orm";
 import { uuidv7 } from "uuidv7";
 import { db } from "../client";
 import { shareLinks, type ShareLink, type NewShareLink } from "../schema/tables/share-links";
+import { users } from "../schema/tables/users";
 
 /** Slug builder. "<seller-initials>-<company-slug>" per spec USER FLOWS Flow 1. */
 export function buildSlug(sellerName: string, companyName: string): string {
@@ -54,4 +55,20 @@ export async function listShareLinksForUser(userId: string): Promise<ShareLink[]
     .from(shareLinks)
     .where(eq(shareLinks.userId, userId))
     .orderBy(desc(shareLinks.createdAt));
+}
+
+export type ShareLinkWithSeller = ShareLink & { sellerName: string | null };
+
+/**
+ * Admin-dashboard listing: every share link with its seller's display name,
+ * newest first. The admin (single ADMIN_PASSWORD gate per ADR-009) sees all
+ * links, not just their own.
+ */
+export async function listAllShareLinks(): Promise<ShareLinkWithSeller[]> {
+  const rows = await db
+    .select({ link: shareLinks, sellerName: users.name })
+    .from(shareLinks)
+    .leftJoin(users, eq(shareLinks.userId, users.id))
+    .orderBy(desc(shareLinks.createdAt));
+  return rows.map((r) => ({ ...r.link, sellerName: r.sellerName }));
 }

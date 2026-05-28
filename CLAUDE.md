@@ -23,7 +23,7 @@ Postgres 16 hosted on Neon.
 Drizzle ORM for database access. No Prisma.
 Inngest for background job orchestration.
 Upstash Redis for rate limiting and probe-result caching.
-NextAuth 5 (Auth.js) for seller auth with email magic link.
+NextAuth 5 (Auth.js) for auth. NOTE: the spec's `@f5.com` email magic-link flow was abandoned — F5's mail system hard-blocks the f5evolution.com sending domain (see DECISIONS.md ADR-009). The alpha uses a single admin-password gate (Credentials + JWT); Microsoft Entra ID SSO is the planned post-alpha path for seller self-service.
 Resend for transactional email.
 Playwright for PDF generation.
 PostHog for product analytics.
@@ -160,6 +160,7 @@ UPSTASH_REDIS_REST_TOKEN
 RESEND_API_KEY
 NEXTAUTH_SECRET
 NEXTAUTH_URL
+ADMIN_PASSWORD
 INNGEST_EVENT_KEY
 INNGEST_SIGNING_KEY
 SENTRY_DSN
