@@ -1,15 +1,10 @@
 import Link from "next/link";
-import { auth } from "@/auth";
-import { listShareLinksForUser } from "@/lib/db/queries/share-links";
+import { listAllShareLinks } from "@/lib/db/queries/share-links";
 
 export const dynamic = "force-dynamic";
 
 export default async function DashboardPage() {
-  const session = await auth();
-  // Layout already redirects unauthenticated users; assert here for TS.
-  if (!session?.user?.id) return null;
-
-  const links = await listShareLinksForUser(session.user.id);
+  const links = await listAllShareLinks();
 
   return (
     <div>
@@ -17,7 +12,8 @@ export default async function DashboardPage() {
         <div>
           <h1 className="text-3xl font-semibold tracking-tight text-neutral-900">Dashboard</h1>
           <p className="mt-2 text-sm text-neutral-600">
-            Your share links. Each one becomes a cobranded URL you can drop into outreach.
+            All share links. Each is a cobranded URL attributed to a seller you can drop into
+            outreach.
           </p>
         </div>
         <Link
@@ -31,14 +27,12 @@ export default async function DashboardPage() {
       <div className="mt-8">
         {links.length === 0 ? (
           <div className="rounded-md border border-dashed border-neutral-300 px-6 py-12 text-center">
-            <p className="text-sm text-neutral-600">
-              You haven&rsquo;t created any share links yet.
-            </p>
+            <p className="text-sm text-neutral-600">No share links yet.</p>
             <Link
               href="/share-links/new"
               className="mt-3 inline-block text-sm font-medium text-neutral-900 underline underline-offset-4"
             >
-              Create your first one
+              Create the first one
             </Link>
           </div>
         ) : (
@@ -46,6 +40,7 @@ export default async function DashboardPage() {
             <thead>
               <tr className="border-b border-neutral-200 text-left text-xs uppercase tracking-wide text-neutral-500">
                 <th className="py-2 pr-4">Prospect</th>
+                <th className="py-2 pr-4">Seller</th>
                 <th className="py-2 pr-4">Slug</th>
                 <th className="py-2 pr-4">Apex domain</th>
                 <th className="py-2 pr-4">Created</th>
@@ -58,10 +53,9 @@ export default async function DashboardPage() {
                   <td className="py-3 pr-4 font-medium text-neutral-900">
                     {link.prospectCompany}
                   </td>
+                  <td className="py-3 pr-4 text-neutral-600">{link.sellerName ?? "—"}</td>
                   <td className="py-3 pr-4 text-neutral-600">/r/{link.slug}</td>
-                  <td className="py-3 pr-4 text-neutral-600">
-                    {link.prospectApexDomain ?? "—"}
-                  </td>
+                  <td className="py-3 pr-4 text-neutral-600">{link.prospectApexDomain ?? "—"}</td>
                   <td className="py-3 pr-4 text-neutral-500">
                     {new Date(link.createdAt).toLocaleDateString()}
                   </td>

@@ -107,3 +107,26 @@ Context. CLAUDE.md mandates PROGRESS.md updates at session boundaries but does n
 Decision. The build plan lives at `/docs/engineering-plan.md` and is updated as decisions change. PROGRESS.md is the short-form running state; the engineering plan is the long-form sequence and risk register.
 
 Consequences. The plan and PROGRESS.md are both kept current. ADRs go here. The plan can be re-read by future Claude sessions on session start without context loss.
+
+---
+
+## ADR-009 — Seller auth: admin-password gate for the alpha; magic-link abandoned; Entra SSO deferred
+
+Status: Accepted, 2026-05-28. **Supersedes ADR-005** (which specified `@f5.com` email magic-link sign-in).
+
+Context. Phase 3 shipped NextAuth email magic-link sign-in: a seller enters their `@f5.com` address and receives a one-time link from `hello@f5evolution.com` (Resend). In production testing, **every send to an `@f5.com` address bounced** with `550 #5.7.1 Your access to submit messages to this e-mail system has been rejected` — a Microsoft Exchange policy rejection. We verified this is **not** an authentication gap: DKIM was already aligned, and adding a DMARC record (`v=DMARC1; p=none;`) plus apex SPF did not change the result. F5's mail security hard-blocks the `f5evolution.com` sending domain, almost certainly as anti-impersonation/lookalike protection (a domain containing "f5" that isn't `f5.com`, sending login links to F5 employees, reads as credential phishing to F5's own security stack). Because every seller is `@f5.com`, magic-link auth is non-viable for the entire user base, not just one mailbox.
+
+Decision. For the internal alpha, replace seller-by-seller email auth with a **single admin-password gate**:
+- NextAuth Credentials provider, one shared `ADMIN_PASSWORD` (constant-time compared), **JWT** session strategy (no DB session storage; the Drizzle adapter is removed).
+- The admin (Dan + PMM) signs in and provisions share links centrally. This fits the alpha reality: Dan already curates the 10-seller cohort with John Dumalac.
+- **Sellers do not log in.** They become co-branding profiles the admin creates (name, title, avatar, calendar, `@f5.com` contact email) and attributes links to. The prospect-facing assessment flow needs no auth and is unchanged.
+- The `@f5.com` rule survives as `isF5Email`, now validating seller-profile emails on creation rather than gating sign-in.
+
+The robust long-term answer — **Microsoft Entra ID SSO** ("Sign in with Microsoft", F5 being a confirmed Microsoft shop) — is **deferred to post-alpha**. It eliminates email entirely, is naturally F5-employee-only, and is what sellers already use daily, but it requires an Entra app registration in F5's tenant (an F5 IT dependency we chose not to block the alpha on).
+
+Consequences.
+- The `accounts`, `sessions`, and `verification_tokens` tables (added in migration 0001 for the magic-link adapter) are now **unused**. Left in place; dropping them is a separate deliberate migration, not worth a destructive change mid-pivot.
+- The `resend` package stays installed for possible future notifications, but note the same F5 deliverability constraint applies to any mail sent to `@f5.com`.
+- Seller self-service (creating their own links, seeing their own telemetry) does not exist until Entra SSO lands. Acceptable for a 10-seller admin-provisioned alpha.
+- `ADMIN_PASSWORD` is now a required secret (local `.env.local` + Vercel production & preview).
+- This is reversible: the magic-link code is in git history, and Entra SSO is additive when F5 IT is ready.
